@@ -1,10 +1,9 @@
----
 title: "covid 19"
-author: "Dr K"
-date: "5/2/2020"
+author: "Taelynn Condoll"
+date: "summer 2022"
 output:
-  html_document: default
-  pdf_document: default
+html_document: default
+pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -15,45 +14,65 @@ require(tigerstats)
 require(lubridate)
 kRdata <- read.csv(file = 'kRdata.csv')
 ```
-### Data is from the Patient_Info dataset from South Korea 1 Jan to 1 May 
+
+### Data is from the Patient_Info dataset from South Korea 1 Jan to 1 May
+
 ### This is contained in a downloadable zip file from kaggle
 
 Some of the data was uncoded for sex - sex must be just male or female
 77 of the data entries were coded sex  as blank, so we omit these.
-state of a patient must be died or alive - we adjust that as well   
-  
+state of a patient must be died or alive - we adjust that as well  
+
 # Question 1 - Is dying independent of sex
 
+$H_0$: There is no relation between dying and sex
 
-
+$H_A$: There is a relation between dying and sex
 
 Table of patients:
+
 ```{r}
-
 # cross tabulation, patient state by gender
-
 with(kRdata, table(Sex, result))
-
 ```
+
+The table shows that death is related to sex due to only 25 females dying as opposed to 44 males dying.
 
 ## We create two bar charts - one based on frequency and the other on percent, use ggplot commands to do this
 
-`
+```{r}
+dd2 <- kRdata %>% group_by(Sex, result) %>% summarize(count=n()) %>% mutate(prcnt=count/sum(count))
+# the group_followed by  summarize(count=n())
+basicC <- ggplot(dd2,aes(x=Sex,y=count,fill=result))
+basicC + geom_bar(stat="identity",position="dodge")
+#Now for percent plot
+basicC <- ggplot(dd2,aes(x=Sex,y=prcnt*100,fill=result))
+basicC + geom_bar(stat="identity",position="dodge")
+```
 
-  
+These bar graphs shoe that males are more likley to die then females . The first graph displays the frequency of death and the second shows the precent dead . males have a much higher chance of death.
 
-
-
-
-
-  
 ## Numerical results
 
+```{r}
+table1 <- xtabs(~Sex + result, data=kRdata)
+rowPerc(table1)
+colPerc(table1)
+```
 
-## Inferential results 
+The table shows men are significantly more likley to die then women.
 
+## Inferential results
 
+```{r}
+table1 <- xtabs(~Sex + result, data=kRdata)
+chisq.test(table1)
+chisqtestGC(table1)
+fisher.test(table1)
+```
 
+The p val is .0009 which is smaller then .05 so we reject the null hypothesis.
 
 ## Conclusions
 
+This study shows men are much more likely to die then women. The p-value is significantly less then 0.05. Therefore we reject the null hypothesis which states that there is no relation between death and sex.
